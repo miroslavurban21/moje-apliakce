@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulátor vah</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --border: #e0ddd6;
+    --text: #1a1a18;
+    --muted: #888880;
+    --accent: #2d5a27;
+    --accent-light: #e8f0e6;
+    --danger: #c0392b;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  header {
+    max-width: 720px;
+    margin: 0 auto 2.5rem;
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 1rem;
+  }
+
+  header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* Add exercise form */
+  .add-form {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+  }
+
+  .add-form input[type="text"] {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .add-form input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+
+  .btn {
+    padding: 0.7rem 1.3rem;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover { opacity: 0.88; }
+
+  .btn-danger {
+    background: none;
+    color: var(--danger);
+    border: 1.5px solid var(--danger);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .btn-danger:hover { background: #fdf0ef; }
+
+  /* Exercise cards */
+  .exercises { display: flex; flex-direction: column; gap: 1.2rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    animation: slideIn 0.2s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--accent-light);
+  }
+
+  .card-header h2 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .card-header .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .rm-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .rm-input-wrap label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .rm-input-wrap input[type="number"] {
+    width: 80px;
+    padding: 0.35rem 0.6rem;
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    text-align: right;
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .rm-input-wrap input[type="number"]:focus {
+    border-color: var(--accent);
+  }
+
+  .rm-input-wrap span { font-size: 0.8rem; color: var(--muted); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: right;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  thead th:first-child { text-align: left; }
+
+  tbody tr { transition: background 0.1s; }
+  tbody tr:hover { background: #fafaf8; }
+
+  tbody td {
+    padding: 0.55rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    text-align: right;
+    border-bottom: 1px solid #f0ede8;
+  }
+
+  tbody td:first-child {
+    text-align: left;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  .highlight-row { background: var(--accent-light) !important; }
+  .highlight-row td { font-weight: 600; }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+  }
+
+  .empty-state span { display: block; font-size: 2rem; margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kalkulátor vah — % z maxima</h1>
+  <p>Zadej svůj 1RM a zobraz váhy od 40 % do 100 % s krokem 5 %.</p>
+</header>
+
+<div class="container">
+  <div class="add-form">
+    <input type="text" id="exerciseInput" placeholder="Název cviku (např. Bench press)" maxlength="50">
+    <button class="btn btn-primary" onclick="addExercise()">＋ Přidat cvik</button>
+  </div>
+
+  <div class="exercises" id="exercises">
+    <div class="empty-state" id="emptyState">
+      <span>🏋️</span>
+      Zatím nemáš žádný cvik. Přidej první výše.
+    </div>
+  </div>
+</div>
+
+<script>
+  const exercises = [];
+
+  const input = document.getElementById('exerciseInput');
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') addExercise(); });
+
+  function addExercise() {
+    const name = input.value.trim();
+    if (!name) return;
+    exercises.push({ name, rm: '' });
+    input.value = '';
+    renderAll();
+  }
+
+  function removeExercise(i) {
+    exercises.splice(i, 1);
+    renderAll();
+  }
+
+  function renderAll() {
+    const container = document.getElementById('exercises');
+    const empty = document.getElementById('emptyState');
+
+    // Clear old cards (keep emptyState)
+    [...container.children].forEach(c => { if (c !== empty) c.remove(); });
+
+    if (exercises.length === 0) {
+      empty.style.display = '';
+      return;
+    }
+    empty.style.display = 'none';
+
+    exercises.forEach((ex, i) => {
+      const card = buildCard(ex, i);
+      container.appendChild(card);
+    });
+  }
+
+  function buildCard(ex, i) {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const header = document.createElement('div');
+    header.className = 'card-header';
+    header.innerHTML = `
+      <h2>${escHtml(ex.name)}</h2>
+      <div class="header-right">
+        <div class="rm-input-wrap">
+          <label>1RM</label>
+          <input type="number" min="0" step="0.5" placeholder="0" value="${ex.rm}" oninput="updateRM(${i}, this.value)">
+          <span>kg</span>
+        </div>
+        <button class="btn btn-danger" onclick="removeExercise(${i})">Odebrat</button>
+      </div>
+    `;
+
+    const tableWrap = document.createElement('div');
+    tableWrap.className = 'table-wrap';
+    tableWrap.appendChild(buildTable(ex.rm));
+
+    card.appendChild(header);
+    card.appendChild(tableWrap);
+    return card;
+  }
+
+  function buildTable(rm) {
+    const table = document.createElement('table');
+    const rmVal = parseFloat(rm) || 0;
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>%</th>
+          <th>Váha (kg)</th>
+          <th>Zaokrouhleno (2,5 kg)</th>
+        </tr>
+      </thead>
+    `;
+
+    const tbody = document.createElement('tbody');
+    for (let pct = 100; pct >= 40; pct -= 5) {
+      const exact = rmVal > 0 ? (rmVal * pct / 100).toFixed(1) : '—';
+      const rounded = rmVal > 0 ? (Math.round((rmVal * pct / 100) / 2.5) * 2.5).toFixed(1) : '—';
+      const tr = document.createElement('tr');
+      if (pct === 100) tr.classList.add('highlight-row');
+      tr.innerHTML = `<td>${pct} %</td><td>${exact}</td><td>${rounded}</td>`;
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    return table;
+  }
+
+  function updateRM(i, val) {
+    exercises[i].rm = val;
+    // Re-render only the table in this card
+    const cards = document.querySelectorAll('.card');
+    const tableWrap = cards[i].querySelector('.table-wrap');
+    tableWrap.innerHTML = '';
+    tableWrap.appendChild(buildTable(val));
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>
