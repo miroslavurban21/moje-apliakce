@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mirous Interval Timer</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --work: #FF3A3A;
+    --rest: #3AFFD4;
+    --countdown: #FF6B3A;
+    --bg: #0D0D0D;
+    --panel: #161616;
+    --border: #2a2a2a;
+    --text: #F0F0F0;
+    --muted: #666;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .app { width: 100%; max-width: 460px; padding: 24px; }
+
+  #setup { display: flex; flex-direction: column; gap: 20px; }
+  #timer { display: none; flex-direction: column; align-items: center; }
+  #done  { display: none; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px; letter-spacing: 4px; color: var(--work); line-height: 1;
+  }
+  .logo span {
+    color: #aaa; font-size: 14px; display: block;
+    letter-spacing: 2px; font-family: 'DM Sans', sans-serif; margin-top: 4px;
+  }
+
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .field {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; transition: border-color .2s;
+  }
+  .field:focus-within      { border-color: var(--work); }
+  .field.rest:focus-within { border-color: var(--rest); }
+  .field.cd:focus-within   { border-color: var(--countdown); }
+  .field label {
+    display: block; font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text); margin-bottom: 8px; font-weight: 500;
+  }
+  .field input {
+    width: 100%; background: none; border: none; outline: none;
+    color: var(--text); font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px; letter-spacing: 2px; line-height: 1;
+  }
+  .field .unit { font-size: 12px; color: #aaa; margin-top: 4px; font-weight: 500; }
+
+  .dot-work { color: var(--work); }
+  .dot-rest { color: var(--rest); }
+  .dot-cd   { color: var(--countdown); }
+
+  .btn-start {
+    background: var(--work); color: #0D0D0D; border: none;
+    border-radius: 12px; padding: 20px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+    letter-spacing: 4px; cursor: pointer; width: 100%;
+    transition: transform .1s, opacity .1s;
+  }
+  .btn-start:hover  { opacity: .9; }
+  .btn-start:active { transform: scale(.98); }
+
+  .phase-label {
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+    letter-spacing: 6px; color: var(--text); margin-bottom: 8px; font-weight: 500;
+  }
+
+  .ring-wrap { position: relative; width: 280px; height: 280px; margin: 8px 0; }
+  .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+  .ring-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .big-time {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px; letter-spacing: 4px; line-height: 1;
+  }
+  .round-info {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 4px;
+    color: var(--text); text-transform: uppercase; margin-top: 6px;
+  }
+
+  .next-info { font-size: 12px; color: var(--muted); letter-spacing: 2px; height: 20px; margin-top: 4px; }
+
+  .controls { display: flex; gap: 12px; margin-top: 24px; width: 100%; }
+  .btn-ctrl {
+    flex: 1; background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); border-radius: 12px; padding: 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    letter-spacing: 1px; cursor: pointer; transition: background .2s;
+  }
+  .btn-ctrl:hover { background: #222; }
+  .btn-ctrl.stop-btn { color: #ff6b6b; border-color: #3a1a1a; }
+  .btn-ctrl.stop-btn:hover { background: #1a0a0a; }
+
+  .done-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 56px;
+    color: var(--work); letter-spacing: 4px;
+  }
+  .done-sub { color: var(--text); font-size: 18px; letter-spacing: 2px; font-family: 'Bebas Neue', sans-serif; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; }
+
+  @keyframes flash {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+  .flashing { animation: flash .5s 3; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SETUP -->
+  <div id="setup">
+    <div class="logo">MIROUS INTERVAL TIMER<span>Custom Workout</span></div>
+    <div class="fields">
+      <div class="field" style="grid-column:1/-1">
+        <label><span class="dot-work">●</span> Rounds</label>
+        <input type="number" id="f-rounds" value="8" min="1" max="99">
+        <div class="unit">rounds</div>
+      </div>
+      <div class="field">
+        <label><span class="dot-work">●</span> Work</label>
+        <input type="number" id="f-work" value="40" min="1">
+        <div class="unit">seconds</div>
+      </div>
+      <div class="field rest">
+        <label><span class="dot-rest">●</span> Rest</label>
+        <input type="number" id="f-rest" value="20" min="1">
+        <div class="unit">seconds</div>
+      </div>
+      <div class="field cd" style="grid-column:1/-1">
+        <label><span class="dot-cd">●</span> Countdown</label>
+        <input type="number" id="f-countdown" value="5" min="0" max="60">
+        <div class="unit">seconds (0 = vypnuto)</div>
+      </div>
+    </div>
+    <button class="btn-start" onclick="startWorkout()">START WORKOUT</button>
+  </div>
+
+  <!-- TIMER -->
+  <div id="timer">
+    <div class="phase-label" id="phase-label">COUNTDOWN</div>
+    <div class="ring-wrap">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="42"
+                fill="none" stroke="#1e1e1e" stroke-width="8"/>
+        <circle id="ring-fg" cx="50" cy="50" r="42"
+                fill="none" stroke="#E8FF3A" stroke-width="8"
+                stroke-linecap="round"
+                stroke-dasharray="263.89"
+                stroke-dashoffset="0"/>
+      </svg>
+      <div class="ring-center">
+        <div class="big-time" id="big-time">00</div>
+        <div class="round-info" id="round-info">ROUND 1 / 8</div>
+      </div>
+    </div>
+    <div class="next-info" id="next-info"></div>
+    <div class="controls">
+      <button class="btn-ctrl" id="pause-btn" onclick="togglePause()">⏸ Pause</button>
+      <button class="btn-ctrl stop-btn" onclick="stopWorkout()">✕ Stop</button>
+    </div>
+  </div>
+
+  <!-- DONE -->
+  <div id="done">
+    <div class="done-title">DONE!</div>
+    <div class="done-sub" id="done-sub">Workout complete</div>
+    <button class="btn-start" onclick="goSetup()">NEW WORKOUT</button>
+  </div>
+
+</div>
+<script>
+const C = 2 * Math.PI * 42; // ≈ 263.89
+
+// ── AUDIO ────────────────────────────────────────────────────────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function getACtx() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
+
+// Boxerský zvon — rekonstruovaný z analýzy reálného vzorku
+// Dominantní frekvence: 1272, 2252, 3356, 4579, 11950, 14014 Hz
+// Doznik: ~3.5 secondsy
+function boxingBell(vol = 1.0) {
+  const ctx = getACtx();
+  const now = ctx.currentTime;
+
+  const master = ctx.createGain();
+  master.connect(ctx.destination);
+
+  // Partials naměřené ze skutečného zvonu (freq, relativní amplituda, decay multiplier)
+  const partials = [
+    { f: 1272,  a: 0.63,  d: 3.5  },
+    { f: 2252,  a: 1.00,  d: 3.0  },
+    { f: 3356,  a: 0.29,  d: 2.0  },
+    { f: 4579,  a: 0.16,  d: 1.5  },
+    { f: 11950, a: 0.18,  d: 0.4  },
+    { f: 14014, a: 0.15,  d: 0.3  },
+  ];
+
+  partials.forEach(p => {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(master);
+    o.type = 'sine';
+    o.frequency.setValueAtTime(p.f, now);
+    // Rychlý náběh (úder), pomalý doznik
+    g.gain.setValueAtTime(0.001, now);
+    g.gain.linearRampToValueAtTime(vol * p.a * 0.35, now + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.001, now + p.d);
+    o.start(now);
+    o.stop(now + p.d + 0.05);
+  });
+
+  // Krátký kovový šum = fyzický náraz kladívka
+  const bufLen = Math.floor(ctx.sampleRate * 0.025);
+  const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1);
+  const noise = ctx.createBufferSource();
+  noise.buffer = buf;
+  // Bandpass kolem 2000 Hz — kovový charakter nárazu
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass'; bp.frequency.value = 2000; bp.Q.value = 0.8;
+  const ng = ctx.createGain();
+  noise.connect(bp); bp.connect(ng); ng.connect(ctx.destination);
+  ng.gain.setValueAtTime(vol * 0.5, now);
+  ng.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+  noise.start(now);
+}
+
+// START WORKOUTU — 3× zvon s rostoucí hlasitostí
+function sndWorkoutStart() {
+  boxingBell(0.7);
+  setTimeout(() => boxingBell(0.85), 220);
+  setTimeout(() => boxingBell(1.0),  440);
+}
+
+// ZAČÁTEK KOLA (práce) — 1× zvon
+function sndWorkStart() {
+  boxingBell(1.0);
+}
+
+// KONEC KOLA / REST — 2× zvon rychle za sebou
+function sndRestStart() {
+  boxingBell(0.9);
+  setTimeout(() => boxingBell(0.9), 220);
+}
+
+// KONEC WORKOUTU — 3× zvon s kratšími pauzami, slavnostněji
+function sndFinish() {
+  boxingBell(1.0);
+  setTimeout(() => boxingBell(0.9), 220);
+  setTimeout(() => boxingBell(0.8), 440);
+}
+// ─────────────────────────────────────────────────────────────────────────
+
+const ringFg     = document.getElementById('ring-fg');
+const bigTime    = document.getElementById('big-time');
+const phaseLabel = document.getElementById('phase-label');
+const roundInfo  = document.getElementById('round-info');
+const nextInfo   = document.getElementById('next-info');
+const pauseBtn   = document.getElementById('pause-btn');
+
+let cfg = {};
+let state = {};           // { phase, round, total, paused }
+let rafId = null;
+let phaseStart = null;    // performance.now() when phase began
+let elapsedOnPause = 0;   // seconds elapsed before pause
+
+function setRing(fraction) {
+  // fraction 1 = full, 0 = empty
+  ringFg.setAttribute('stroke-dashoffset', C * (1 - Math.max(0, Math.min(1, fraction))));
+}
+
+function show(id) {
+  ['setup','timer','done'].forEach(s =>
+    document.getElementById(s).style.display = (s === id) ? 'flex' : 'none'
+  );
+}
+
+function startWorkout() {
+  cfg = {
+    rounds:    parseInt(document.getElementById('f-rounds').value)    || 8,
+    work:      parseInt(document.getElementById('f-work').value)      || 40,
+    rest:      parseInt(document.getElementById('f-rest').value)      || 20,
+    countdown: parseInt(document.getElementById('f-countdown').value) || 0,
+  };
+  const firstPhase = cfg.countdown > 0 ? 'countdown' : 'work';
+  const firstTotal = cfg.countdown > 0 ? cfg.countdown : cfg.work;
+  state = { phase: firstPhase, round: 1, total: firstTotal, paused: false };
+  show('timer');
+  requestWakeLock();
+  sndWorkoutStart();
+  startPhase();
+}
+
+function startPhase() {
+  phaseStart = performance.now();
+  elapsedOnPause = 0;
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(frame);
+}
+
+function frame(now) {
+  if (state.paused) {
+    rafId = requestAnimationFrame(frame);
+    return;
+  }
+
+  const elapsed = elapsedOnPause + (now - phaseStart) / 1000; // seconds
+  const remaining = Math.max(0, state.total - elapsed);
+  const fraction  = remaining / state.total;
+
+  // Smooth ring
+  setRing(fraction);
+
+  // Integer seconds display (ceil so we show full second at start)
+  const displaySec = Math.ceil(remaining);
+  const prevDisplay = parseInt(bigTime.textContent.replace(':', '')) || -1;
+
+  // Update text
+  const m = Math.floor(remaining / 60), s = Math.floor(remaining % 60);
+  bigTime.textContent = remaining >= 60
+    ? `${m}:${String(s).padStart(2,'0')}`
+    : String(displaySec).padStart(2,'0');
+
+  // Colors & labels (update every frame — cheap)
+  let color = '#E8FF3A', label = 'WORK';
+  if (state.phase === 'countdown') { color = '#FF6B3A'; label = 'COUNTDOWN'; }
+  else if (state.phase === 'rest') { color = '#3AFFD4'; label = 'REST'; }
+  ringFg.setAttribute('stroke', color);
+  bigTime.style.color = color;
+  roundInfo.style.color = color;
+  phaseLabel.textContent = label;
+  phaseLabel.style.color = color;
+
+  roundInfo.textContent = state.phase === 'countdown'
+    ? 'GET READY'
+    : `ROUND ${state.round} / ${cfg.rounds}`;
+
+  if (state.phase === 'countdown') {
+    nextInfo.textContent = `↓ WORK ${cfg.work}s`;
+  } else if (state.phase === 'work') {
+    nextInfo.textContent = state.round < cfg.rounds
+      ? (cfg.rest > 0 ? `↓ REST ${cfg.rest}s` : `↓ ROUND ${state.round + 1}`)
+      : '↓ LAST ROUND';
+  } else {
+    nextInfo.textContent = `↓ ROUND ${state.round + 1} — WORK ${cfg.work}s`;
+  }
+
+  if (remaining <= 0) {
+    nextPhase();
+    return;
+  }
+
+  rafId = requestAnimationFrame(frame);
+}
+
+function nextPhase() {
+  bigTime.classList.add('flashing');
+  setTimeout(() => bigTime.classList.remove('flashing'), 1600);
+
+  if (state.phase === 'countdown') {
+    state = { ...state, phase: 'work', total: cfg.work };
+    sndWorkStart();
+
+  } else if (state.phase === 'work') {
+    if (state.round < cfg.rounds && cfg.rest > 0) {
+      state = { ...state, phase: 'rest', total: cfg.rest };
+      sndRestStart();
+    } else if (state.round < cfg.rounds) {
+      state = { ...state, phase: 'work', round: state.round + 1, total: cfg.work };
+      sndWorkStart();
+    } else {
+      finish(); return;
+    }
+
+  } else { // rest
+    if (state.round < cfg.rounds) {
+      state = { ...state, phase: 'work', round: state.round + 1, total: cfg.work };
+      sndWorkStart();
+    } else {
+      finish(); return;
+    }
+  }
+
+  startPhase();
+}
+
+function togglePause() {
+  if (!state.paused) {
+    // Pausing: record how much has elapsed
+    elapsedOnPause += (performance.now() - phaseStart) / 1000;
+    state.paused = true;
+    pauseBtn.textContent = '▶ Resume';
+  } else {
+    // Resuming: reset phaseStart to now
+    phaseStart = performance.now();
+    state.paused = false;
+    pauseBtn.textContent = '⏸ Pause';
+  }
+}
+
+function stopWorkout() {
+  if (rafId) cancelAnimationFrame(rafId);
+  releaseWakeLock();
+  show('setup');
+}
+
+function finish() {
+  if (rafId) cancelAnimationFrame(rafId);
+  releaseWakeLock();
+  sndFinish();
+  const total = cfg.rounds * cfg.work;
+  const m = Math.floor(total / 60), s = total % 60;
+  document.getElementById('done-sub').textContent =
+    `${cfg.rounds} rounds × ${cfg.work}s = ${m > 0 ? m + 'min ' : ''}${s}s active work`;
+  show('done');
+}
+
+function goSetup() { show('setup'); }
+// ── WAKE LOCK ────────────────────────────────────────────────────────────
+let wakeLock = null;
+
+async function requestWakeLock() {
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+    } catch (err) {
+      console.log('Wake Lock error:', err);
+    }
+  }
+}
+
+async function releaseWakeLock() {
+  if (wakeLock) {
+    await wakeLock.release();
+    wakeLock = null;
+  }
+}
+
+// Re-acquire wake lock if page becomes visible again (e.g. tab switch)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && wakeLock === null) {
+    const timerVisible = document.getElementById('timer').style.display === 'flex';
+    if (timerVisible) requestWakeLock();
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────
+
+
+show('setup');
+</script>
+</body>
+</html>
