@@ -311,20 +311,29 @@
     if (state === 'error')   syncLabel.textContent = 'Chyba připojení';
   }
 
+  let isSaving = false;
+
   onValue(cvikyRef, (snapshot) => {
-    exercises = snapshot.val() || [];
     setStatus('synced');
+    // Pokud právě ukládáme, nepřekreslujeme — předejdeme vyskočení kurzoru
+    if (isSaving) return;
+    exercises = snapshot.val() || [];
     renderAll();
   }, () => setStatus('error'));
 
   function save() {
     setStatus('syncing');
+    isSaving = true;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
       set(cvikyRef, exercises)
-        .then(() => setStatus('synced'))
-        .catch(() => setStatus('error'));
-    }, 600);
+        .then(() => {
+          setStatus('synced');
+          // Po uložení počkáme chvíli a pak opět nasloucháme změnám
+          setTimeout(() => { isSaving = false; }, 1000);
+        })
+        .catch(() => { setStatus('error'); isSaving = false; });
+    }, 800);
   }
 
   const input = document.getElementById('exerciseInput');
