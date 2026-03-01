@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --bg: #f5f4f0;
     --surface: #ffffff;
@@ -18,7 +17,6 @@
     --accent-light: #e8f0e6;
     --sans: 'DM Sans', sans-serif;
   }
-
   body {
     font-family: var(--sans);
     background: var(--bg);
@@ -26,26 +24,22 @@
     min-height: 100vh;
     padding: 2rem 1rem;
   }
-
   header {
     max-width: 480px;
     margin: 0 auto 2.5rem;
     border-bottom: 2px solid var(--text);
     padding-bottom: 1rem;
   }
-
   header h1 {
     font-size: 1.6rem;
     font-weight: 600;
     letter-spacing: -0.02em;
   }
-
   header p {
     color: var(--muted);
     font-size: 0.9rem;
     margin-top: 0.3rem;
   }
-
   .container {
     max-width: 480px;
     margin: 0 auto;
@@ -53,7 +47,6 @@
     flex-direction: column;
     gap: 1rem;
   }
-
   .app-link {
     display: flex;
     align-items: center;
@@ -66,24 +59,19 @@
     color: var(--text);
     transition: border-color 0.15s, background 0.15s;
   }
-
   .app-link:hover {
     border-color: var(--accent);
     background: var(--accent-light);
   }
-
   .app-link .app-info { display: flex; flex-direction: column; gap: 0.2rem; }
-
   .app-link .app-name {
     font-size: 1rem;
     font-weight: 600;
   }
-
   .app-link .app-desc {
     font-size: 0.82rem;
     color: var(--muted);
   }
-
   .app-link .arrow {
     font-size: 1.2rem;
     color: var(--accent);
@@ -91,14 +79,11 @@
 </style>
 </head>
 <body>
-
 <header>
   <h1>Moje aplikace</h1>
   <p>Rozcestník všech mých nástrojů a aplikací.</p>
 </header>
-
 <div class="container">
-
   <a class="app-link" href="vaha-kalkulator.html">
     <div class="app-info">
       <span class="app-name">🏋️ Kalkulátor vah</span>
@@ -106,10 +91,14 @@
     </div>
     <span class="arrow">→</span>
   </a>
-
+  <a class="app-link" href="interval-timer.html">
+    <div class="app-info">
+      <span class="app-name">🥊 Mirous Interval Timer</span>
+      <span class="app-desc">Intervalový timer s nastavením kol, práce a odpočinku</span>
+    </div>
+    <span class="arrow">→</span>
+  </a>
   <!-- Sem přidej další aplikace v budoucnu -->
-
 </div>
-
 </body>
 </html>
