@@ -70,6 +70,14 @@
     font-size: 36px; letter-spacing: 2px; line-height: 1;
   }
   .field .unit { font-size: 12px; color: #aaa; margin-top: 4px; font-weight: 500; }
+  .time-inputs {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .time-part { display: flex; flex-direction: column; flex: 1; }
+  .time-sep {
+    font-family: 'Bebas Neue', sans-serif; font-size: 36px;
+    color: var(--muted); line-height: 1; padding-bottom: 18px;
+  }
 
   .dot-work { color: var(--work); }
   .dot-rest { color: var(--rest); }
@@ -148,18 +156,36 @@
       </div>
       <div class="field">
         <label><span class="dot-work">●</span> Work</label>
-        <input type="number" id="f-work" value="40" min="1">
-        <div class="unit">seconds</div>
+        <div class="time-inputs">
+          <div class="time-part">
+            <input type="number" id="f-work-m" value="0" min="0" max="59" placeholder="0">
+            <div class="unit">min</div>
+          </div>
+          <div class="time-sep">:</div>
+          <div class="time-part">
+            <input type="number" id="f-work-s" value="40" min="0" max="59" placeholder="0">
+            <div class="unit">sec</div>
+          </div>
+        </div>
       </div>
       <div class="field rest">
         <label><span class="dot-rest">●</span> Rest</label>
-        <input type="number" id="f-rest" value="20" min="1">
-        <div class="unit">seconds</div>
+        <div class="time-inputs">
+          <div class="time-part">
+            <input type="number" id="f-rest-m" value="0" min="0" max="59" placeholder="0">
+            <div class="unit">min</div>
+          </div>
+          <div class="time-sep">:</div>
+          <div class="time-part">
+            <input type="number" id="f-rest-s" value="20" min="0" max="59" placeholder="0">
+            <div class="unit">sec</div>
+          </div>
+        </div>
       </div>
       <div class="field cd" style="grid-column:1/-1">
         <label><span class="dot-cd">●</span> Countdown</label>
-        <input type="number" id="f-countdown" value="5" min="0" max="60">
-        <div class="unit">seconds (0 = vypnuto)</div>
+        <input type="number" id="f-countdown-s" value="5" min="0" max="99">
+        <div class="unit">seconds (0 = off)</div>
       </div>
     </div>
     <button class="btn-start" onclick="startWorkout()">START WORKOUT</button>
@@ -308,11 +334,16 @@ function show(id) {
 }
 
 function startWorkout() {
+  const workM  = parseInt(document.getElementById('f-work-m').value)      || 0;
+  const workS  = parseInt(document.getElementById('f-work-s').value)      || 0;
+  const restM  = parseInt(document.getElementById('f-rest-m').value)      || 0;
+  const restS  = parseInt(document.getElementById('f-rest-s').value)      || 0;
+  const cdS    = parseInt(document.getElementById('f-countdown-s').value) || 0;
   cfg = {
-    rounds:    parseInt(document.getElementById('f-rounds').value)    || 8,
-    work:      parseInt(document.getElementById('f-work').value)      || 40,
-    rest:      parseInt(document.getElementById('f-rest').value)      || 20,
-    countdown: parseInt(document.getElementById('f-countdown').value) || 0,
+    rounds:    parseInt(document.getElementById('f-rounds').value) || 8,
+    work:      workM * 60 + workS  || 40,
+    rest:      restM * 60 + restS  || 20,
+    countdown: cdS,
   };
   const firstPhase = cfg.countdown > 0 ? 'countdown' : 'work';
   const firstTotal = cfg.countdown > 0 ? cfg.countdown : cfg.work;
