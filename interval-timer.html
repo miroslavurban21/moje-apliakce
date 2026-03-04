@@ -94,11 +94,11 @@
   .btn-start:active { transform: scale(.98); }
 
   .phase-label {
-    font-family: 'Bebas Neue', sans-serif; font-size: 36px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 48px;
     letter-spacing: 8px; color: var(--text); margin-bottom: 8px;
   }
 
-  .ring-wrap { position: relative; width: 280px; height: 280px; margin: 8px 0; }
+  .ring-wrap { position: relative; width: 340px; height: 340px; margin: 8px 0; }
   .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 
   .ring-center {
@@ -108,12 +108,12 @@
   }
   .big-time {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 96px; letter-spacing: 4px; line-height: 1;
+    font-size: 120px; letter-spacing: 4px; line-height: 1;
   }
   .round-info {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px; letter-spacing: 4px;
-    color: var(--text); text-transform: uppercase; margin-top: 8px;
+    font-size: 36px; letter-spacing: 4px;
+    color: var(--text); text-transform: uppercase; margin-top: 10px;
   }
 
 
@@ -195,12 +195,12 @@
     <div class="phase-label" id="phase-label">COUNTDOWN</div>
     <div class="ring-wrap">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="50" r="42"
+        <circle cx="50" cy="50" r="44"
                 fill="none" stroke="#1e1e1e" stroke-width="8"/>
-        <circle id="ring-fg" cx="50" cy="50" r="42"
+        <circle id="ring-fg" cx="50" cy="50" r="44"
                 fill="none" stroke="#FF3A3A" stroke-width="8"
                 stroke-linecap="round"
-                stroke-dasharray="263.89"
+                stroke-dasharray="276.46"
                 stroke-dashoffset="0"/>
       </svg>
       <div class="ring-center">
@@ -223,7 +223,7 @@
 
 </div>
 <script>
-const C = 2 * Math.PI * 42; // ≈ 263.89
+const C = 2 * Math.PI * 44; // ≈ 276.46
 
 // ── AUDIO ────────────────────────────────────────────────────────────────
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
