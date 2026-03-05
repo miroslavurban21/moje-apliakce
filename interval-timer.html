@@ -69,15 +69,39 @@
     color: var(--text); font-family: 'Bebas Neue', sans-serif;
     font-size: 36px; letter-spacing: 2px; line-height: 1;
   }
+  /* Hide native spinners in all browsers */
+  .field input[type=number]::-webkit-outer-spin-button,
+  .field input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .field input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   .field .unit { font-size: 12px; color: #aaa; margin-top: 4px; font-weight: 500; }
   .time-inputs {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: flex-start; gap: 8px; overflow: visible;
   }
-  .time-part { display: flex; flex-direction: column; flex: 1; }
+  .time-part { display: flex; flex-direction: column; flex: 1; min-width: 0; overflow: visible; }
   .time-sep {
     font-family: 'Bebas Neue', sans-serif; font-size: 36px;
     color: var(--muted); line-height: 1; padding-bottom: 18px;
   }
+  .stepper {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .stepper input {
+    flex: 1; min-width: 0; background: none; border: none; outline: none;
+    color: var(--text); font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px; letter-spacing: 2px; line-height: 1;
+  }
+  .step-btns {
+    display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;
+  }
+  .btn-step {
+    background: #222; border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; width: 32px; height: 28px; font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .15s; user-select: none; -webkit-user-select: none;
+    line-height: 1;
+  }
+  .btn-step:hover  { background: #333; }
+  .btn-step:active { background: #444; }
 
   .dot-work { color: var(--work); }
   .dot-rest { color: var(--rest); }
@@ -150,19 +174,37 @@
     <div class="fields">
       <div class="field" style="grid-column:1/-1">
         <label><span class="dot-work">●</span> Rounds</label>
-        <input type="number" id="f-rounds" value="8" min="1" max="99">
+        <div class="stepper">
+          <input type="number" id="f-rounds" value="8" min="1" max="99">
+          <div class="step-btns">
+            <button class="btn-step" onclick="stepInput('f-rounds',1,1,99)">+</button>
+            <button class="btn-step" onclick="stepInput('f-rounds',-1,1,99)">−</button>
+          </div>
+        </div>
         <div class="unit">rounds</div>
       </div>
       <div class="field">
         <label><span class="dot-work">●</span> Work</label>
         <div class="time-inputs">
           <div class="time-part">
-            <input type="number" id="f-work-m" value="0" min="0" max="59" placeholder="0">
+            <div class="stepper">
+              <input type="number" id="f-work-m" value="0" min="0" max="59" placeholder="0">
+              <div class="step-btns">
+                <button class="btn-step" onclick="stepInput('f-work-m',1,0,59)">+</button>
+                <button class="btn-step" onclick="stepInput('f-work-m',-1,0,59)">−</button>
+              </div>
+            </div>
             <div class="unit">min</div>
           </div>
           <div class="time-sep">:</div>
           <div class="time-part">
-            <input type="number" id="f-work-s" value="40" min="0" max="59" placeholder="0">
+            <div class="stepper">
+              <input type="number" id="f-work-s" value="40" min="0" max="59" placeholder="0">
+              <div class="step-btns">
+                <button class="btn-step" onclick="stepInput('f-work-s',1,0,59)">+</button>
+                <button class="btn-step" onclick="stepInput('f-work-s',-1,0,59)">−</button>
+              </div>
+            </div>
             <div class="unit">sec</div>
           </div>
         </div>
@@ -171,19 +213,37 @@
         <label><span class="dot-rest">●</span> Rest</label>
         <div class="time-inputs">
           <div class="time-part">
-            <input type="number" id="f-rest-m" value="0" min="0" max="59" placeholder="0">
+            <div class="stepper">
+              <input type="number" id="f-rest-m" value="0" min="0" max="59" placeholder="0">
+              <div class="step-btns">
+                <button class="btn-step" onclick="stepInput('f-rest-m',1,0,59)">+</button>
+                <button class="btn-step" onclick="stepInput('f-rest-m',-1,0,59)">−</button>
+              </div>
+            </div>
             <div class="unit">min</div>
           </div>
           <div class="time-sep">:</div>
           <div class="time-part">
-            <input type="number" id="f-rest-s" value="20" min="0" max="59" placeholder="0">
+            <div class="stepper">
+              <input type="number" id="f-rest-s" value="20" min="0" max="59" placeholder="0">
+              <div class="step-btns">
+                <button class="btn-step" onclick="stepInput('f-rest-s',1,0,59)">+</button>
+                <button class="btn-step" onclick="stepInput('f-rest-s',-1,0,59)">−</button>
+              </div>
+            </div>
             <div class="unit">sec</div>
           </div>
         </div>
       </div>
       <div class="field cd" style="grid-column:1/-1">
         <label><span class="dot-cd">●</span> Countdown</label>
-        <input type="number" id="f-countdown-s" value="5" min="0" max="99">
+        <div class="stepper">
+          <input type="number" id="f-countdown-s" value="5" min="0" max="99">
+          <div class="step-btns">
+            <button class="btn-step" onclick="stepInput('f-countdown-s',1,0,99)">+</button>
+            <button class="btn-step" onclick="stepInput('f-countdown-s',-1,0,99)">−</button>
+          </div>
+        </div>
         <div class="unit">seconds (0 = off)</div>
       </div>
     </div>
@@ -326,6 +386,13 @@ let phaseStart = null;    // performance.now() when phase began
 let elapsedOnPause = 0;
 let lastCountdownBeep = -1; // which second (3,2,1) was last beeped   // seconds elapsed before pause
 
+function stepInput(id, delta, min, max) {
+  const el = document.getElementById(id);
+  let val = parseInt(el.value) || 0;
+  val = Math.min(max, Math.max(min, val + delta));
+  el.value = val;
+}
+
 function setRing(fraction) {
   // fraction 1 = full, 0 = empty
   ringFg.setAttribute('stroke-dashoffset', C * (1 - Math.max(0, Math.min(1, fraction))));
@@ -346,7 +413,7 @@ function startWorkout() {
   cfg = {
     rounds:    parseInt(document.getElementById('f-rounds').value) || 8,
     work:      workM * 60 + workS  || 40,
-    rest:      restM * 60 + restS  || 20,
+    rest:      restM * 60 + restS,
     countdown: cdS,
   };
   const firstPhase = cfg.countdown > 0 ? 'countdown' : 'work';
